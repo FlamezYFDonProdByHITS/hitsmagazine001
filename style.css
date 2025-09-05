@@ -3,16 +3,17 @@
   --panel: #13131a;
   --ink: #f2f2f7;
   --muted: #9aa0a6;
-  --accent: #ff5c9a;
-  --accent2: #6ee7ff;
   --edge: rgba(255,255,255,.07);
   --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --ok: #9effa6;
+  --bad: #ff8d8d;
 }
 
 *{ box-sizing:border-box; }
 html, body{ height:100%; }
 body{
-  margin:0; color:var(--ink); background: radial-gradient(1200px 800px at 70% -10%, #191a1f, var(--bg));
+  margin:0; color:var(--ink);
+  background: radial-gradient(1200px 800px at 70% -10%, #191a1f, var(--bg));
   font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
   overflow:hidden;
 }
@@ -38,6 +39,7 @@ body{
   padding: 16px;
   display:grid; gap:16px;
   grid-template-columns: 1fr 220px;
+  position:relative;
 }
 
 .flipbook{
@@ -46,11 +48,13 @@ body{
   border:1px solid var(--edge); border-radius:16px; overflow:hidden; box-shadow:var(--shadow);
   position:relative;
 }
-
 .page{
   background:#0f0f13; display:flex; align-items:center; justify-content:center; position:relative;
 }
-.page img{ max-width:100%; max-height:100%; object-fit:contain; display:block; user-select:none; -webkit-user-drag:none; }
+.page img{
+  max-width:100%; max-height:100%;
+  object-fit:contain; display:block; user-select:none; -webkit-user-drag:none;
+}
 
 .thumbs{
   background: var(--panel); border:1px solid var(--edge); border-radius:16px; box-shadow:var(--shadow);
@@ -59,7 +63,7 @@ body{
 #thumbs{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
 .thumb{
   background:#161622; border:1px solid var(--edge); border-radius:10px; overflow:hidden; cursor:pointer; aspect-ratio:3/4;
-  transition: transform .12s ease, border-color .2s ease;
+  transition: transform .12s ease, border-color .2s ease; position:relative;
 }
 .thumb:hover{ transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
 .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -67,7 +71,6 @@ body{
   position:absolute; top:6px; left:6px; background: rgba(0,0,0,.45);
   padding:2px 6px; border-radius:6px; font-size:12px; color:#fff; border:1px solid rgba(255,255,255,.14);
 }
-.thumb{ position:relative; }
 
 .footer{
   height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 16px;
@@ -82,3 +85,14 @@ body{
 }
 
 .zoomed .flipbook{ cursor: zoom-out; }
+
+/* Diagnostics */
+.diag{
+  position:absolute; right:12px; top:12px; z-index:50;
+  background:#111a; color:#fff; padding:10px 12px; border:1px solid #ffffff22;
+  border-radius:10px; font:12px/1.4 system-ui; max-width:360px; backdrop-filter: blur(4px);
+}
+.diag-title{ margin-bottom:6px; opacity:.85; font-weight:600; }
+.diag-list{ max-height:220px; overflow:auto; }
+.diag .ok{ color: var(--ok); }
+.diag .bad{ color: var(--bad); }
