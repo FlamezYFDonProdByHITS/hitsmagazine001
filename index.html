@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Magazine — Turn.js</title>
+  <link rel="preload" href="pages/001.jpg" as="image">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">My Magazine</div>
+    <div class="controls">
+      <button id="btnPrev" aria-label="Previous Page">⟵</button>
+      <button id="btnNext" aria-label="Next Page">⟶</button>
+      <button id="btnZoom" aria-label="Zoom In/Out">⤢</button>
+      <a id="btnDownload" href="#" download>Download Issue</a>
+    </div>
+  </header>
+
+  <main id="stage">
+    <div id="flipbook" class="flipbook" aria-label="Flipbook" role="region"></div>
+
+    <aside class="thumbs" aria-label="Thumbnails">
+      <div id="thumbs"></div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <span id="pageIndicator">Page 1 / 1</span>
+    </div>
+    <div class="help">
+      ← → keys to flip • pinch/scroll to zoom • drag corners to turn
+    </div>
+  </footer>
+
+  <!-- Turn.js -->
+  <script src="vendor/turn.min.js"></script>
+  <!-- Your logic -->
+  <script src="script.js"></script>
+
+  <!-- CONFIG: edit these to point to your images -->
+  <script>
+    window.MAG_CONFIG = {
+      totalPages: 12,               // <-- set this to your page count
+      path: "pages",                // folder where images live
+      prefix: "",                   // optional prefix if your files are like "mag_001.jpg"
+      ext: "jpg",                   // jpg|png|webp
+      pad: 3,                       // 001, 002...
+      startPage: 1,                 // 1-based
+      downloadZipUrl: "",           // optional: link to a zip of the whole issue
+      singlePageOnMobile: true      // auto single-page mode on small screens
+    };
+  </script>
+</body>
+</html>
