@@ -36,9 +36,9 @@
     <div id="bookWrap" class="bookwrap" aria-label="Flipbook">
       <div id="book" class="book" role="region" aria-roledescription="book"></div>
 
-      <!-- edge hover hints -->
-      <div class="edge edge-left" aria-hidden="true"></div>
-      <div class="edge edge-right" aria-hidden="true"></div>
+      <!-- clickable edge zones -->
+      <button class="edge edge-left" id="edgeLeft" aria-label="Previous page"></button>
+      <button class="edge edge-right" id="edgeRight" aria-label="Next page"></button>
     </div>
 
     <!-- Slider -->
@@ -60,12 +60,6 @@
 
     <!-- Shortcut helper -->
     <button id="hotkey" class="hotkey" title="Shortcuts: ←/→, Home/End, G Grid, Z Zoom, F Fullscreen, Space Auto-flip">?</button>
-
-    <!-- Optional diagnostics (toggle via window.DIAG=true in console) -->
-    <div id="diag" class="diag" hidden>
-      <div class="diag-title">Diagnostics</div>
-      <div id="diagList" class="diag-list"></div>
-    </div>
   </main>
 
   <footer class="footer" role="contentinfo">
@@ -75,14 +69,14 @@
   <!-- Config -->
   <script>
     window.MAG_CONFIG = {
-      totalPages: 2,       // ← set this when you add pages (e.g., 24)
+      totalPages: 1,       /* set this when you add more pages (e.g., 24) */
       path: "pages",
       prefix: "",
       ext: "png",
-      pad: 3,              // 001, 002, ...
+      pad: 3,              /* 001, 002, ... */
       startPage: 1,
       singlePageOnMobile: true,
-      autoplayMs: 2500     // Auto-flip interval (ms)
+      autoplayMs: 2500
     };
   </script>
   <script src="script.js"></script>
