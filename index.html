@@ -3,54 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HITS Magazine — Vanilla Flipbook</title>
+  <title>HITS Magazine — Flipbook</title>
   <link rel="preload" href="pages/001.png" as="image">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">HITS Magazine</div>
-    <div class="controls">
-      <button id="btnPrev" aria-label="Previous Page">⟵</button>
-      <button id="btnNext" aria-label="Next Page">⟶</button>
-      <button id="btnZoom" aria-label="Zoom In/Out">⤢</button>
+  <header class="topbar" role="banner">
+    <div class="brand" aria-label="Brand">HITS MAG</div>
+    <div class="controls" role="toolbar" aria-label="Flipbook controls">
+      <button class="btn" id="btnFirst" title="First (Home)">⟪</button>
+      <button class="btn" id="btnPrev" title="Previous (←)">⟨</button>
+      <button class="btn" id="btnNext" title="Next (→)">⟩</button>
+      <button class="btn" id="btnLast" title="Last (End)">⟫</button>
+
+      <div class="divider"></div>
+
+      <button class="btn" id="btnGrid" title="Grid (G)">☰</button>
+      <button class="btn" id="btnZoom" title="Zoom (Z)">⤢</button>
+      <button class="btn" id="btnFull" title="Fullscreen (F)">⛶</button>
+      <button class="btn" id="btnPlay" title="Auto Flip (Space)">►</button>
     </div>
   </header>
 
-  <main id="stage">
-    <div id="bookWrap">
-      <div id="book" aria-label="Flipbook" role="region"></div>
+  <main id="stage" role="main">
+    <div id="hud">
+      <div id="pageIndicator" aria-live="polite">1 / 1</div>
+      <div id="progressWrap" aria-hidden="true">
+        <div id="progress"></div>
+      </div>
     </div>
 
-    <aside class="thumbs" aria-label="Thumbnails">
-      <div id="thumbs"></div>
-    </aside>
+    <div id="bookWrap" class="bookwrap" aria-label="Flipbook">
+      <div id="book" class="book" role="region" aria-roledescription="book"></div>
 
-    <!-- Diagnostics (toggle via window.DIAG=true in console if needed) -->
+      <!-- edge hover hints -->
+      <div class="edge edge-left" aria-hidden="true"></div>
+      <div class="edge edge-right" aria-hidden="true"></div>
+    </div>
+
+    <!-- Slider -->
+    <div class="sliderRow" aria-label="Page slider">
+      <input id="pageSlider" type="range" min="1" max="1" value="1" />
+      <input id="pageInput" type="number" min="1" max="1" value="1" aria-label="Go to page" />
+    </div>
+
+    <!-- Grid overlay -->
+    <div id="gridOverlay" class="overlay" aria-hidden="true">
+      <div class="overlay-inner" role="dialog" aria-modal="true" aria-label="All pages">
+        <div class="overlay-head">
+          <div>All Pages</div>
+          <button class="btn" id="btnCloseGrid" title="Close (Esc)">✕</button>
+        </div>
+        <div id="grid" class="grid"></div>
+      </div>
+    </div>
+
+    <!-- Shortcut helper -->
+    <button id="hotkey" class="hotkey" title="Shortcuts: ←/→, Home/End, G Grid, Z Zoom, F Fullscreen, Space Auto-flip">?</button>
+
+    <!-- Optional diagnostics (toggle via window.DIAG=true in console) -->
     <div id="diag" class="diag" hidden>
       <div class="diag-title">Diagnostics</div>
       <div id="diagList" class="diag-list"></div>
     </div>
   </main>
 
-  <footer class="footer">
-    <span id="pageIndicator">Page 1 / 1</span>
-    <div class="help">← → keys • tap/drag to flip • Ctrl+wheel to zoom</div>
+  <footer class="footer" role="contentinfo">
+    <div>Black & White UI • Vanilla 3D Flip • HITS Development</div>
   </footer>
 
   <!-- Config -->
   <script>
     window.MAG_CONFIG = {
-      totalPages: 1,    // set to your actual count when you add more
+      totalPages: 1,       // ← set this when you add pages (e.g., 24)
       path: "pages",
       prefix: "",
       ext: "png",
-      pad: 3,           // 001, 002, ...
+      pad: 3,              // 001, 002, ...
       startPage: 1,
-      singlePageOnMobile: true
+      singlePageOnMobile: true,
+      autoplayMs: 2500     // Auto-flip interval (ms)
     };
   </script>
-
   <script src="script.js"></script>
 </body>
 </html>
