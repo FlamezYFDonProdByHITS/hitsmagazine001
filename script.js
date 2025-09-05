@@ -2,6 +2,7 @@
   const cfg = window.MAG_CONFIG || {};
   const $book = document.getElementById('book');
   const $bookWrap = document.getElementById('bookWrap');
+  const $stage = document.getElementById('stage');
   const $pageIndicator = document.getElementById('pageIndicator');
   const $pageSlider = document.getElementById('pageSlider');
   const $pageInput  = document.getElementById('pageInput');
@@ -26,15 +27,12 @@
   const $hotkey   = document.getElementById('hotkey');
   const $progress = document.getElementById('progress');
 
-  // Utils
   const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
   const pad   = (n, size)=> (cfg.pad ? String(n).padStart(cfg.pad, '0') : String(n));
   const src   = (n)=> `${cfg.path}/${cfg.prefix}${pad(n, cfg.pad)}.${cfg.ext}`;
   const isMobile = ()=> window.innerWidth <= 980;
 
-  // State
-  const total0 = Math.max(1, cfg.totalPages|0);
-  let total = total0;
+  const total = Math.max(1, cfg.totalPages|0);
   let current = clamp(readHash() || readSaved() || (cfg.startPage||1), 1, total);
   let display = computeDisplayMode();
   let dragging = null;
@@ -62,25 +60,20 @@
   $pageSlider.min = '1'; $pageSlider.max = String(total); $pageSlider.value = String(current);
   $pageInput.min  = '1'; $pageInput.max  = String(total); $pageInput.value  = String(current);
 
-  // Rendering -------------------------------------------------------------
+  // ---- Rendering ----
 
   function computeDisplayMode(){
-    // Double-page spread on desktop; single on mobile or if only 1 page
     return (total===1 || (cfg.singlePageOnMobile && isMobile())) ? 'single' : 'double';
   }
 
   function getSpreadFor(page){
-    // Book convention: page 1 is a single right page (cover). Spreads: (2-3), (4-5), ...
     if(display==='single') return { type:'single', left:null, right: clamp(page,1,total) };
-
     if(page<=1) return { type:'cover', left:null, right:1 };
-    if(page%2===0){ // even on left
-      const left = page;
-      const right = clamp(page+1, 1, total);
+    if(page%2===0){
+      const left = page, right = clamp(page+1,1,total);
       return { type:'spread', left, right };
-    } else { // odd on right
-      const left = clamp(page-1, 1, total);
-      const right = page;
+    } else {
+      const left = clamp(page-1,1,total), right = page;
       return { type:'spread', left, right };
     }
   }
@@ -92,12 +85,8 @@
     const s = getSpreadFor(current);
     const wrap = document.createElement('div'); wrap.className='spread';
 
-    if(s.type==='single'){
-      wrap.appendChild(mkPage(s.right, 'single'));                // full width
-    } else if(s.type==='cover'){
-      // Show page 1 as a single RIGHT page; center visually by using single class
-      const p = mkPage(1, 'single');
-      wrap.appendChild(p);
+    if(s.type==='single' || s.type==='cover'){
+      wrap.appendChild(mkPage(s.right, 'single'));
     } else {
       wrap.appendChild(mkPage(s.left,  'left'));
       wrap.appendChild(mkPage(s.right, 'right'));
@@ -109,7 +98,9 @@
     saveState();
     updateHash();
     preloadNeighbors();
-    fitBookToImageIfSingle(); // true-size obeyed in single-page situations
+
+    // Fit to viewport AFTER images load (so we know their natural sizes)
+    fitBookToViewport();
   }
 
   function mkPage(n, side){
@@ -122,6 +113,10 @@
     img.loading = (Math.abs(n-current)<=2) ? 'eager' : 'lazy';
     img.src = src(n);
     d.appendChild(img);
+
+    // If an image loads later (cache miss), refit the book
+    const refit = ()=> fitBookToViewport();
+    img.addEventListener('load', refit, { once:true });
 
     // interactions for drag flip
     d.addEventListener('pointerdown', (e)=>startDrag(e,d,side));
@@ -145,53 +140,57 @@
     });
   }
 
-  // True-size single page (no upscaling; shrink to fit)
-  function fitBookToImageIfSingle(){
-    if(display!=='single'){ $bookWrap.style.width=''; $bookWrap.style.height=''; return; }
-    const img = $book.querySelector('.page img');
-    if(!img) return;
+  // === FIT LOGIC (no scrolling) ===
+  function fitBookToViewport(){
+    // Available area = stage middle row (the big central grid cell)
+    const gridMiddle = $bookWrap.parentElement; // #stage's middle cell
+    const availW = gridMiddle.clientWidth;
+    const availH = gridMiddle.clientHeight;
 
-    const apply = ()=>{
-      const natW = img.naturalWidth || img.width;
-      const natH = img.naturalHeight || img.height;
-      if(!natW || !natH) return;
-      const col = $bookWrap.parentElement;          // the middle grid row col
-      const availW = col.clientWidth;
-      const availH = col.clientHeight;
+    // Measure images currently shown
+    const pages = [...$book.querySelectorAll('.page img')];
+    if(pages.length === 0){ return; }
 
-      const scale = Math.min(1, availW / natW, availH / natH);   // never upscale
-      const w = Math.floor(natW * scale);
-      const h = Math.floor(natH * scale);
+    // Compute spread natural size
+    let natW, natH;
+    if(display === 'single' || pages.length === 1){
+      const img = pages[0];
+      natW = img.naturalWidth || img.width || 800;
+      natH = img.naturalHeight || img.height || 600;
+    } else {
+      // Double spread: width = sum of both; height = max of both
+      const L = pages[0], R = pages[1];
+      const lw = L.naturalWidth || L.width || 800;
+      const lh = L.naturalHeight || L.height || 600;
+      const rw = R.naturalWidth || R.width || 800;
+      const rh = R.naturalHeight || R.height || 600;
+      natW = lw + rw;
+      natH = Math.max(lh, rh);
+    }
 
-      $bookWrap.style.width  = w + 'px';
-      $bookWrap.style.height = h + 'px';
-    };
-    if(img.complete) apply(); else img.addEventListener('load', apply, { once:true });
+    // Scale to fit both width AND height (and never upscale)
+    const scale = Math.min(1, availW / natW, availH / natH);
+    const fitW = Math.floor(natW * scale);
+    const fitH = Math.floor(natH * scale);
+
+    // Apply exact size to wrapper; the internal pages use % of this box
+    $bookWrap.style.width  = fitW + 'px';
+    $bookWrap.style.height = fitH + 'px';
   }
 
-  // UI + Controls ---------------------------------------------------------
-
+  // ---- UI & controls ----
   function applyUI(){
     $pageIndicator.textContent = `${current} / ${total}`;
     $pageSlider.value = String(current);
     $pageInput.value  = String(current);
-
-    // progress fraction by logical reading order (page 1 counts as 1)
     const pct = ((current-1)/(total-1 || 1))*100;
     $progress.style.width = `${pct}%`;
   }
 
-  function first(){
-    current = 1;
-    build();
-  }
-  function last(){
-    if(display==='single'){
-      current = total;
-    } else {
-      // For double: last spread starts at even. If final page is odd, show (total-1, total)
-      current = (total===1) ? 1 : (total%2===0 ? total-1 : total-1);
-    }
+  function first(){ current = 1; build(); }
+  function last (){
+    if(display==='single'){ current = total; }
+    else { current = (total===1) ? 1 : (total%2===0 ? total-1 : total-1); }
     build();
   }
 
@@ -200,10 +199,7 @@
       if(current < total){ animateFlip('next'); current++; build(); }
       return;
     }
-    if(current === 1){
-      animateFlip('next'); current = Math.min(2, total); build(); return;
-    }
-    // Move to next spread start (even on left)
+    if(current === 1){ animateFlip('next'); current = Math.min(2, total); build(); return; }
     const base = (current%2===0) ? current+2 : current+1;
     if(base <= total){ animateFlip('next'); current = base; build(); }
   }
@@ -219,12 +215,13 @@
     animateFlip('prev'); build();
   }
 
-  // Flip animation via overlay sheet
+  // Flip animation
   function animateFlip(dir){
     const overlay = document.createElement('div');
     overlay.className = 'page flipping';
-    overlay.style.width = (display==='single' || current===1) ? '100%' : '50%';
-    overlay.style.left  = (dir==='prev') ? '0%' : ((display==='single' || current===1) ? '0%' : '50%');
+    const singleLike = (display==='single' || current===1);
+    overlay.style.width = singleLike ? '100%' : '50%';
+    overlay.style.left  = (dir==='prev') ? '0%' : (singleLike ? '0%' : '50%');
     overlay.style.transformOrigin = (dir==='prev') ? 'left center' : 'right center';
     overlay.style.background = 'linear-gradient(180deg, #111, #0b0b0b)';
     $book.appendChild(overlay);
@@ -234,7 +231,7 @@
     setTimeout(()=> overlay.remove(), 440);
   }
 
-  // Drag flip (left/right page)
+  // Drag-to-flip
   function startDrag(e, el, side){
     dragging = { startX: e.clientX, el, side };
     el.setPointerCapture(e.pointerId);
@@ -246,7 +243,7 @@
     const w  = dragging.el.clientWidth;
     const isRight = (dragging.side==='right' || dragging.side==='single');
     let angle = (dx / w) * (isRight ? -90 : 90);
-    angle = clamp(angle, -90, 90);
+    angle = Math.max(-90, Math.min(90, angle));
     dragging.el.style.transform = `rotateY(${angle}deg)`;
   }
   function endDrag(){
@@ -288,14 +285,14 @@
     if(e.key==='Escape' && $gridOverlay.classList.contains('show')) hideGrid();
   });
 
-  // Slider + quick input
+  // Slider / input
   $pageSlider.addEventListener('input', (e)=>{
-    const val = clamp(parseInt(e.target.value,10)||1,1,total);
-    current = val; build();
+    current = clamp(parseInt(e.target.value,10)||1,1,total);
+    build();
   });
   $pageInput.addEventListener('change', (e)=>{
-    const val = clamp(parseInt(e.target.value,10)||1,1,total);
-    current = val; build();
+    current = clamp(parseInt(e.target.value,10)||1,1,total);
+    build();
   });
 
   // Grid overlay
@@ -325,24 +322,21 @@
   }
   $btnPlay.addEventListener('click', toggleAuto);
 
-  // Help bubble
-  $hotkey.addEventListener('click', ()=> alert('Shortcuts:\n\n← / → : Prev / Next\nHome / End : First / Last\nG : Grid overlay\nZ : Zoom\nF : Fullscreen\nSpace : Auto-flip on/off'));
-
   // Hash + resume
   function readHash(){ const m=location.hash.match(/page=(\d+)/); return m?parseInt(m[1],10):null; }
   function updateHash(){ try{ const u=new URL(location.href); u.hash=`page=${current}`; history.replaceState(null,'',u); }catch{} }
   function saveState(){ try{ localStorage.setItem('flip.last', String(current)); }catch{} }
   function readSaved(){ try{ const v=localStorage.getItem('flip.last'); return v?parseInt(v,10):null; }catch{ return null; } }
 
-  // Resize: adjust mode and true-size
+  // Resize: recompute mode, rebuild, and refit strictly to viewport
   let rid=null;
   window.addEventListener('resize', ()=>{
     clearTimeout(rid);
     rid=setTimeout(()=>{
       const nd = computeDisplayMode();
       if(nd!==display){ display=nd; build(); }
-      fitBookToImageIfSingle();
-    }, 120);
+      else fitBookToViewport();  // refit even if mode didn’t change
+    }, 60);
   });
 
   // Boot
