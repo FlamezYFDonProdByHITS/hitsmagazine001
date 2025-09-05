@@ -36,15 +36,33 @@
     <div class="help">← → keys • Ctrl+wheel to zoom</div>
   </footer>
 
-  <!-- jQuery (must load before Turn.js if using jQuery build) -->
+  <!-- jQuery (must load before Turn.js if using the jQuery build) -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"
           integrity="sha256-2PM2JtG3S2kGJdP0bZ6n6A5Cw5Yl6Vxq+oVYhZ+6UJ0="
           crossorigin="anonymous"></script>
 
-  <!-- Turn.js (place your copy at vendor/turn.min.js) -->
-  <script src="vendor/turn.min.js"
-          onload="window.__turnLoaded=true"
-          onerror="window.__turnLoaded=false"></script>
+  <!-- Try local Turn.js first -->
+  <script>
+    window.__turnReady = new Promise((resolve) => {
+      const s = document.createElement('script');
+      s.src = 'vendor/turn.min.js';     // your local copy
+      s.onload = () => resolve('local');
+      s.onerror = () => resolve('fallback');
+      document.head.appendChild(s);
+    }).then(where => {
+      if (where === 'fallback') {
+        // Fallback to CDN if local file missing
+        return new Promise((resolve2) => {
+          const c = document.createElement('script');
+          c.src = 'https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js';
+          c.onload = () => resolve2('cdn');
+          c.onerror = () => resolve2('failed');
+          document.head.appendChild(c);
+        });
+      }
+      return 'local';
+    });
+  </script>
 
   <!-- Config (1 page, 001.png) -->
   <script>
