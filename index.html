@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My Magazine — Turn.js</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HITS Magazine — Vanilla Flipbook</title>
   <link rel="preload" href="pages/001.png" as="image">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">My Magazine</div>
+    <div class="brand">HITS Magazine</div>
     <div class="controls">
       <button id="btnPrev" aria-label="Previous Page">⟵</button>
       <button id="btnNext" aria-label="Next Page">⟶</button>
@@ -18,14 +18,16 @@
   </header>
 
   <main id="stage">
-    <div id="flipbook" class="flipbook" aria-label="Flipbook" role="region"></div>
+    <div id="bookWrap">
+      <div id="book" aria-label="Flipbook" role="region"></div>
+    </div>
 
     <aside class="thumbs" aria-label="Thumbnails">
       <div id="thumbs"></div>
     </aside>
 
-    <!-- Diagnostics overlay -->
-    <div id="diag" class="diag">
+    <!-- Diagnostics (toggle via window.DIAG=true in console if needed) -->
+    <div id="diag" class="diag" hidden>
       <div class="diag-title">Diagnostics</div>
       <div id="diagList" class="diag-list"></div>
     </div>
@@ -33,45 +35,17 @@
 
   <footer class="footer">
     <span id="pageIndicator">Page 1 / 1</span>
-    <div class="help">← → keys • Ctrl+wheel to zoom</div>
+    <div class="help">← → keys • tap/drag to flip • Ctrl+wheel to zoom</div>
   </footer>
 
-  <!-- jQuery (must load before Turn.js if using the jQuery build) -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-          integrity="sha256-2PM2JtG3S2kGJdP0bZ6n6A5Cw5Yl6Vxq+oVYhZ+6UJ0="
-          crossorigin="anonymous"></script>
-
-  <!-- Try local Turn.js first -->
-  <script>
-    window.__turnReady = new Promise((resolve) => {
-      const s = document.createElement('script');
-      s.src = 'vendor/turn.min.js';     // your local copy
-      s.onload = () => resolve('local');
-      s.onerror = () => resolve('fallback');
-      document.head.appendChild(s);
-    }).then(where => {
-      if (where === 'fallback') {
-        // Fallback to CDN if local file missing
-        return new Promise((resolve2) => {
-          const c = document.createElement('script');
-          c.src = 'https://cdn.jsdelivr.net/gh/blasten/turn.js/turn.min.js';
-          c.onload = () => resolve2('cdn');
-          c.onerror = () => resolve2('failed');
-          document.head.appendChild(c);
-        });
-      }
-      return 'local';
-    });
-  </script>
-
-  <!-- Config (1 page, 001.png) -->
+  <!-- Config -->
   <script>
     window.MAG_CONFIG = {
-      totalPages: 1,
+      totalPages: 1,    // set to your actual count when you add more
       path: "pages",
       prefix: "",
       ext: "png",
-      pad: 3,
+      pad: 3,           // 001, 002, ...
       startPage: 1,
       singlePageOnMobile: true
     };
