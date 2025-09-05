@@ -23,27 +23,37 @@
     <aside class="thumbs" aria-label="Thumbnails">
       <div id="thumbs"></div>
     </aside>
+
+    <!-- Diagnostics overlay -->
+    <div id="diag" class="diag">
+      <div class="diag-title">Diagnostics</div>
+      <div id="diagList" class="diag-list"></div>
+    </div>
   </main>
 
   <footer class="footer">
     <span id="pageIndicator">Page 1 / 1</span>
-    <div class="help">← → keys to flip • pinch/scroll to zoom</div>
+    <div class="help">← → keys • Ctrl+wheel to zoom</div>
   </footer>
 
-  <!-- jQuery MUST load before turn.js if you’re using the jQuery build -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-2PM2JtG3S2kGJdP0bZ6n6A5Cw5Yl6Vxq+oVYhZ+6UJ0=" crossorigin="anonymous"></script>
+  <!-- jQuery (must load before Turn.js if using jQuery build) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-2PM2JtG3S2kGJdP0bZ6n6A5Cw5Yl6Vxq+oVYhZ+6UJ0="
+          crossorigin="anonymous"></script>
 
-  <!-- Turn.js: put your file at vendor/turn.min.js (from turnjs) -->
-  <script src="vendor/turn.min.js"></script>
+  <!-- Turn.js (place your copy at vendor/turn.min.js) -->
+  <script src="vendor/turn.min.js"
+          onload="window.__turnLoaded=true"
+          onerror="window.__turnLoaded=false"></script>
 
-  <!-- Config for your issue -->
+  <!-- Config (1 page, 001.png) -->
   <script>
     window.MAG_CONFIG = {
-      totalPages: 1,        // you said it’s one page
-      path: "pages",        // folder for images
-      prefix: "",           // no prefix (files are like 001.png)
-      ext: "png",           // your images are .png
-      pad: 3,               // 001, 002, ...
+      totalPages: 1,
+      path: "pages",
+      prefix: "",
+      ext: "png",
+      pad: 3,
       startPage: 1,
       singlePageOnMobile: true
     };
