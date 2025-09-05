@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>My Magazine — Turn.js</title>
-  <link rel="preload" href="pages/001.jpg" as="image">
+  <link rel="preload" href="pages/001.png" as="image">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -14,7 +14,6 @@
       <button id="btnPrev" aria-label="Previous Page">⟵</button>
       <button id="btnNext" aria-label="Next Page">⟶</button>
       <button id="btnZoom" aria-label="Zoom In/Out">⤢</button>
-      <a id="btnDownload" href="#" download>Download Issue</a>
     </div>
   </header>
 
@@ -27,31 +26,29 @@
   </main>
 
   <footer class="footer">
-    <div>
-      <span id="pageIndicator">Page 1 / 1</span>
-    </div>
-    <div class="help">
-      ← → keys to flip • pinch/scroll to zoom • drag corners to turn
-    </div>
+    <span id="pageIndicator">Page 1 / 1</span>
+    <div class="help">← → keys to flip • pinch/scroll to zoom</div>
   </footer>
 
-  <!-- Turn.js -->
-  <script src="vendor/turn.min.js"></script>
-  <!-- Your logic -->
-  <script src="script.js"></script>
+  <!-- jQuery MUST load before turn.js if you’re using the jQuery build -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-2PM2JtG3S2kGJdP0bZ6n6A5Cw5Yl6Vxq+oVYhZ+6UJ0=" crossorigin="anonymous"></script>
 
-  <!-- CONFIG: edit these to point to your images -->
+  <!-- Turn.js: put your file at vendor/turn.min.js (from turnjs) -->
+  <script src="vendor/turn.min.js"></script>
+
+  <!-- Config for your issue -->
   <script>
     window.MAG_CONFIG = {
-      totalPages: 2,               // <-- set this to your page count
-      path: "pages",                // folder where images live
-      prefix: "",                   // optional prefix if your files are like "mag_001.jpg"
-      ext: "png",                   // jpg|png|webp
-      pad: 3,                       // 001, 002...
-      startPage: 1,                 // 1-based
-      downloadZipUrl: "",           // optional: link to a zip of the whole issue
-      singlePageOnMobile: true      // auto single-page mode on small screens
+      totalPages: 1,        // you said it’s one page
+      path: "pages",        // folder for images
+      prefix: "",           // no prefix (files are like 001.png)
+      ext: "png",           // your images are .png
+      pad: 3,               // 001, 002, ...
+      startPage: 1,
+      singlePageOnMobile: true
     };
   </script>
+
+  <script src="script.js"></script>
 </body>
 </html>
